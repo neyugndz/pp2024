@@ -107,6 +107,28 @@ class University:
                 'Course ID': selected_course.get_id(),  
                 'Marks': mark
             })
+
+    def show_marks(self):
+        if len(self.__courses) == 0 or len(self.__students) == 0 or len(self.__marks) == 0:
+            print("There must be courses, students, and marks to show the student marks.")
+            return
+        print("Select a course to show marks: ")
+        self.list_courses()
+        course_index = int(input("Enter the course number: ")) - 1
+        
+        if course_index < 0 or course_index >= len(self.__courses):
+            print("Invalid course selection. ")
+            return
+        
+        selected_course = self.__courses[course_index]
+        print(f"Student marks for course {selected_course.get_name()}")
+        
+        for mark in self.__marks:
+            if mark['Course ID'] == selected_course.get_id():
+                student = next((student for student in self.__students if student.get_id() == mark['Student ID']), None)
+                if student: 
+                    print(f"{student.get_name()} - Marks: {mark['Marks']}")
+
         
 def main():
     univ = University()
@@ -118,6 +140,7 @@ def main():
     3. Input marks
     4. List Students
     5. List Courses
+    6. Show marks for a course
     """)
         option = int(input("Your choice: "))
         if option == 0:
@@ -132,6 +155,8 @@ def main():
             univ.list_students()
         elif option == 5:
             univ.list_courses()
+        elif option == 6:
+            univ.show_marks()
         else:
             print("Invalid input. Please try again")
 
