@@ -1,9 +1,28 @@
+from datetime import datetime
 class Student:
     def __init__(self):
         self.__student_id = input("Enter the student's id: ")
-        self.__name = input("Enter the student's name: ")
-        self.__dob = input("Enter the student's dob: ")
+        self.__name = self.valid_name()
+        self.__dob = self.valid_dob()
         
+    def valid_dob(self):
+        while True:
+            dob_str = input("Enter the student's dob (DD/MM/YYYY): ")
+            try:
+                dob = datetime.strptime(dob_str,"%d/%m/%Y").date()
+                return dob.strftime("%d/%m/%Y")
+            except ValueError:
+                print("Invalid date format. Please enter a valid date format (DD/MM/YYYY): ")
+                
+    def valid_name(self):
+        while True:
+            name = input("Enter the student's name: ")
+            
+            if all(letter.isalpha() or letter.isspace() for letter in name):
+                return name
+            else:
+                print("Invalid name. Please enter a valid name without number or special characters")
+ 
     def get_id(self):
         return self.__student_id
 
@@ -16,7 +35,16 @@ class Student:
 class Course:
     def __init__(self):
         self.__id = input("Enter the course's id: ")
-        self.__name = input("Enter the course's name: ")
+        self.__name = self.valid_name()
+        
+    def valid_name(self):
+        while True:
+            name = input("Enter the course's name: ")
+            
+            if all(letter.isalpha() or letter.isspace() for letter in name):
+                return name
+            else:
+                print("Invalid name. Please enter a valid name without number or special characters")
         
     def get_id(self):
         return self.__id
@@ -25,8 +53,17 @@ class Course:
         return self.__name
     
 class Utils:
+    @staticmethod
     def input_something(args):
-        return int(input(f"Enter the number of {args}: "))
+        while True:
+            try:
+                num_of_args = int(input(f"Enter the number of {args}: "))
+                if num_of_args >= 0:
+                    return num_of_args
+                else:
+                    print(f"Please enter a positive number of {args}")
+            except ValueError:
+                print("Please enter a valid number. ")
  
 class University:
     def __init__(self):
@@ -84,6 +121,17 @@ class University:
             for i, course in enumerate(self.__courses,start=1):
                 print(f"{i}. ID: {course.get_id()} - Name: {course.get_name()}")
     
+    def valid_mark(self, mark):
+        try:
+            mark = float(mark)
+            if 0.0 <= mark <= 20.0:
+                return True
+            else:
+                print("Invalid mark. Please enter a value between 0.0 and 20.0")
+        except ValueError:
+            print("Invalid mark. Please enter a valid numerical mark")
+        return False
+    
     def input_marks(self):
         if len(self.__courses) == 0 or len(self.__students) == 0:
             print("There must be courses and students before inputting marks.")
@@ -101,12 +149,16 @@ class University:
         print(f"Input marks for students in course {selected_course.get_name()}")
         
         for student in self.__students:
-            mark = float(input(f"Enter marks for {student.get_name()}: "))
-            self.__marks.append({
-                'Student ID': student.get_id(),
-                'Course ID': selected_course.get_id(),  
-                'Marks': mark
-            })
+            while True:
+                mark_input = input(f"Enter marks for {student.get_name()}: ")
+                if self.valid_mark(mark_input):
+                    mark = float(mark_input)
+                    self.__marks.append({
+                        'Student ID': student.get_id(),
+                        'Course ID': selected_course.get_id(),  
+                        'Marks': mark
+                    })
+                    break
 
     def show_marks(self):
         if len(self.__courses) == 0 or len(self.__students) == 0 or len(self.__marks) == 0:
