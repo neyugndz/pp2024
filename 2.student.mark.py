@@ -160,6 +160,12 @@ class University:
                     })
                     break
 
+    def check_course(self, selected_course_id):
+        for mark in self.__marks:
+            if mark['Course ID'] == selected_course_id:
+                return False
+            return True
+        
     def show_marks(self):
         if len(self.__courses) == 0 or len(self.__students) == 0 or len(self.__marks) == 0:
             print("There must be courses, students, and marks to show the student marks.")
@@ -173,7 +179,11 @@ class University:
             return
         
         selected_course = self.__courses[course_index]
-        print(f"Student marks for course {selected_course.get_name()}")
+        print(f"Student marks for course {selected_course.get_name()}: ")
+        
+        if self.check_course(selected_course.get_id()):
+            print("No students being marked yet in the selected course.")
+            return
         
         for mark in self.__marks:
             if mark['Course ID'] == selected_course.get_id():
