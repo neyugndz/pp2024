@@ -1,3 +1,4 @@
+import curses
 from datetime import datetime
 import math;
 import numpy
@@ -255,7 +256,44 @@ class University:
             gpa = self.calGPA(student.get_id())
             print(f"{student.get_name()} - GPA: {gpa: .2f}")
         
+
+
+class CursesUI:
+    def __init__(self,stdscr):
+        self.stdscr = stdscr
+        self.univ = University()
+        curses.curs_set(0)
+        curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        self.stdscr.bkgd(curses.color_pair(1)) 
+        self.stdscr.refresh()   
         
+    def draw_menu(self, menu):
+        self.stdscr.clear()
+        self.stdscr.addstr("University Management System\n", curses.A_BOLD)
+        self.stdscr.addstr("-" * 30 + "\n", curses.A_BOLD)
+        for idx, item in enumerate(menu,start=1):
+            self.stdscr.addstr(f"{idx}. {item}\n")
+        self.stdscr.addstr("\nSelect an option (0 to exit): ", curses.A_BOLD)
+        self.stdscr.refresh()
+    
+    def main_loop(self):
+        menu_options = [
+            "Add Students",
+            "Add Courses",
+            "Input marks",
+            "List Students",
+            "List Courses",
+            "Show marks for a course",
+            "Calculate GPA for a student",
+            "Sort student by GPA"
+        ]
+        while True:
+            self.draw_menu(menu_options)
+            option = self.get_input_numeric()
+            if option = 0:
+                break
+            self.handle_option(option)
+    
 def main():
     univ = University()
     while True:
