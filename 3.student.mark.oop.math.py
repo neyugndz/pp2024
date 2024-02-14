@@ -3,10 +3,10 @@ from datetime import datetime
 import math;
 import numpy
 class Student:
-    def __init__(self):
-        self.__student_id = input("Enter the student's id: ")
-        self.__name = self.valid_name()
-        self.__dob = self.valid_dob()
+    def __init__(self, student_id, name, dob):
+        self.__student_id = student_id
+        self.__name = name
+        self.__dob = dob
         
     def valid_dob(self):
         while True:
@@ -34,12 +34,13 @@ class Student:
     
     def get_dob(self):
         return self.__dob
+    
 
 class Course:
-    def __init__(self):
-        self.__id = input("Enter the course's id: ")
-        self.__name = self.valid_name()
-        self.__credits = self.valid_credits()
+    def __init__(self, Id, name, credit):
+        self.__id = Id
+        self.__name = name
+        self.__credits = credit
         
     def valid_name(self):
         while True:
@@ -85,12 +86,11 @@ class Utils:
                 print("Please enter a valid number. ")
  
 class University:
-    def __init__(self):
+    def __init__(self, ui):
         self.__students = []
         self.__courses = []
         self.__marks = []
-        self.__num_students = 0
-        self.__num_courses = 0
+        self.ui = ui
     
     def get_num_students(self):
         return self.__num_students
@@ -111,34 +111,42 @@ class University:
         self.__num_courses = Utils.input_something("courses")
     
     def set_student(self):
-        self.set_num_students()
-        for _ in range (self.__num_students):
-            student = Student()
-            self.__students.append(student)
-    
+        num_students = self.ui.get_input_numeric("Enter the number of students: ")
+        for _ in range(num_students):
+            student_id = self.ui.get_input_string("Enter student's id: ")
+            name = self.ui.get_input_string("Enter student's name: ")
+            dob = self.ui.get_input_string("Enter student's dob (DD/MM/YYYY): ")
+            self.__students.append(Student(student_id, name, dob))
+        self.ui.show_message(f"{num_students} students added successfully.")
+            
     def set_courses(self):
-        self.set_num_courses()
-        for _ in range (self.__num_courses):
-            course = Course()
-            self.__courses.append(course)
+        num_courses = self.ui.get_input_numeric("Enter the number of courses: ")
+        for _ in range(num_courses):
+            course_id = self.ui.get_input_string("Enter the course's id: ")
+            name = self.ui.get_input_string("Enter the course's name: ")
+            credit = self.ui.get_input_string("Enter the course's credits: ")
+            self.__courses.append(Course(course_id, name, credit))
+        self.ui.show_message(f"{num_courses} courses added successfully. ")
             
     def list_students(self):
         if len(self.__students) == 0:
-            print("There aren't any students yet.")
+            self.ui.show_message("There aren't any students yet.")
         else:
-            print("Here is the student list: ")
+            student_list = "Here is the student list:\n"
             
             for i, student in enumerate(self.__students,start=1):
-                print(f"{i}. ID: {student.get_id()} - Name: {student.get_name()} - DoB: {student.get_dob()}")
+                student_list += f"{i}. ID: {student.get_id()} - Name: {student.get_name()} - DoB: {student.get_dob()}\n"
+            self.ui.show_message(student_list)
     
     def list_courses(self):
         if len(self.__courses) == 0:
-            print("There aren't any courses yet.")
+            self.ui.show_message("There aren't any courses yet.")
         else:
-            print("Here is the course list")
+            course_list = "Here is the course list:\n"
             
             for i, course in enumerate(self.__courses,start=1):
-                print(f"{i}. ID: {course.get_id()} - Name: {course.get_name()}")
+                course_list += f"{i}. ID: {course.get_id()} - Name: {course.get_name()}"
+            self.ui.show_message(course_list)
     
     def valid_mark(self, mark):
         try:
@@ -153,32 +161,25 @@ class University:
     
     def input_marks(self):
         if len(self.__courses) == 0 or len(self.__students) == 0:
-            print("There must be courses and students before inputting marks.")
+            self.ui.show_message("There must be courses and students before inputting marks.")
             return
-        print("Select a course to input marks: ")
         self.list_courses()
-        course_index = int(input("Enter the course number: ")) - 1
+        course_index = self.ui.get_input_numeric("Select a course to input marks (by number): ") - 1
         
         if course_index < 0 or course_index >= len(self.__courses):
-            print("Invalid course selection. ")
+            self.ui.show_message("Invalid course selection. ")
             return
         
         selected_course = self.__courses[course_index]
         
-        print(f"Input marks for students in course {selected_course.get_name()}")
-        
         for student in self.__students:
-            while True:
-                mark_input = input(f"Enter marks for {student.get_name()}: ")
-                if self.valid_mark(mark_input):
-                    mark = float(mark_input)
-                    rounded_mark = math.floor(mark * 10) / 10
-                    self.__marks.append({
-                        'Student ID': student.get_id(),
-                        'Course ID': selected_course.get_id(),  
-                        'Marks': rounded_mark
-                    })
-                    break
+            mark_input = self.ui.get_input_numeric(f"Enter marks for {student.get_name()}: ")
+            self.__marks.append({
+                'Student ID' : student.get_id(),
+                'Course ID' : selected_course.get_id(),
+                'Marks' : mark_input
+            })
+        self.ui.show_message("Marks entered successfully. ")
 
     def check_course(self, selected_course_id):
         for mark in self.__marks:
@@ -188,30 +189,30 @@ class University:
         
     def show_marks(self):
         if len(self.__courses) == 0 or len(self.__students) == 0 or len(self.__marks) == 0:
-            print("There must be courses, students, and marks to show the student marks.")
+            self.ui.show_message("There must be courses, students, and marks to show the student marks.")
             return
-        print("Select a course to show marks: ")
         self.list_courses()
-        course_index = int(input("Enter the course number: ")) - 1
+        course_index = self.ui.get_input_numeric("Select a course to show marks (by number): ") - 1
         
         if course_index < 0 or course_index >= len(self.__courses):
-            print("Invalid course selection. ")
+            self.ui.show_message("Invalid course selection. ")
             return
         
         selected_course = self.__courses[course_index]
-        print(f"Student marks for course {selected_course.get_name()}: ")
-        
-        if self.check_course(selected_course.get_id()):
-            print("No students being marked yet in the selected course.")
-            return
+        mark_list = f"Student marks for course {selected_course.get_name()}:\n"
         
         for mark in self.__marks:
             if mark['Course ID'] == selected_course.get_id():
                 student = next((student for student in self.__students if student.get_id() == mark['Student ID']), None)
                 if student: 
-                    print(f"{student.get_name()} - Marks: {mark['Marks']}")
+                    mark_list += f"{student.get_name()} - Marks: {mark['Marks']}\n"
                     
-                    
+        if self.check_course(selected_course.get_id()):
+            self.ui.show_message("No students being marked yet in the selected course.")
+            return
+        
+        self.ui.show_message(mark_list)
+        
     def calGPA(self, student_id):
         student_marks = [mark['Marks'] for mark in self.__marks if mark['Student ID'] == student_id]
         student_credits = [course.get_credits() for course in self.__courses]
@@ -226,42 +227,65 @@ class University:
         
     def showGPA(self):
         if len(self.__students) == 0 or len(self.__marks) == 0:
-            print("There must be students and marks to calculate GPA.")
+            self.ui.show_message("There must be students and marks to calculate GPA.")
             return
-        
-        print("Select a student to calculate GPA.")
         self.list_students()
-        index = int(input("Enter the student number: ")) - 1
+        student_index = self.ui.get_input_numeric("Select a student to calculate GPA (by number): ") - 1
         
-        if index < 0 or index >= len(self.__students):
-            print("Invalid student selection.")
+        if student_index < 0 or student_index >= len(self.__students):
+            self.ui.show_message("Invalid student selection.")
             return
         
         selected_student = self.__students[index]
-        student_id = selected_student.get_id()
-        gpa = self.calGPA(student_id)
+        student_marks = [mark for mark in self.__marks if mark['Student ID'] == selected_student.get_id()]
+        if not student_marks:
+            self.ui.show_message(f"No marks recorded for {selected_student.get_name()}.")
+            return
         
-        print(f"GPA for {selected_student.get_name()} is: {gpa: .2f}")
+        total_credits = 0
+        total_points = 0
+        for mark in student_marks:
+            course = next((course for course in self.__courses if course.get_id() == mark['Course ID']), None)
+            if course:
+                total_credits += course.get_credits()
+                total_points +=  mark['Marks'] * course.get_credits()
+            
+        if total_credits == 0 :
+            gpa = 0
+        else:
+            gpa = total_points / total_credits
+        
+        self.ui.show_message(f"GPA for {selected_student.get_name()}: {gpa:.2f}")
         
     def sortGPA(self):
         if len(self.__students) == 0 or len(self.__marks) == 0:
-            print("There must be students and marks to calculate GPA.")
+            self.ui.show_message("No students or marks have been added yet.")
             return
-        
-        self.__students.sort(key= lambda student: self.calGPA(student.get_id()), reverse=True)
-        
-        print("List of students after sorting by GPA in descending order: ")    
-        
-        for student in self.__students:
-            gpa = self.calGPA(student.get_id())
-            print(f"{student.get_name()} - GPA: {gpa: .2f}")
-        
 
+        def calculate_gpa(student_id):
+            student_marks = [mark for mark in self.__marks if mark['Student ID'] == student_id]
+            total_credits = 0
+            total_points = 0
+            for mark in student_marks:
+                course = next((course for course in self.__courses if course.get_id() == mark['Course ID']), None)
+                if course:
+                    total_credits += course.get_credits()
+                    total_points += mark['Marks'] * course.get_credits()
+            return total_points / total_credits if total_credits else 0
+
+        self.__students.sort(key=lambda student: calculate_gpa(student.get_id()), reverse=True)
+
+        sorted_students = "Students sorted by GPA in descending order:\n"
+        for student in self.__students:
+            gpa = calculate_gpa(student.get_id())
+            sorted_students += f"{student.get_name()} - GPA: {gpa:.2f}\n"
+
+        self.ui.show_message(sorted_students)
 
 class CursesUI:
     def __init__(self,stdscr):
         self.stdscr = stdscr
-        self.univ = University()
+        self.univ = University(self)
         curses.curs_set(0)
         curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
         self.stdscr.bkgd(curses.color_pair(1)) 
@@ -280,60 +304,62 @@ class CursesUI:
         menu_options = [
             "Add Students",
             "Add Courses",
-            "Input marks",
+            "Input Marks",
             "List Students",
             "List Courses",
-            "Show marks for a course",
-            "Calculate GPA for a student",
-            "Sort student by GPA"
+            "Show Marks for a Course",
+            "Calculate GPA for a Student",
+            "Sort Student by GPA"
         ]
         while True:
             self.draw_menu(menu_options)
-            option = self.get_input_numeric()
-            if option = 0:
-                break
-            self.handle_option(option)
-    
-def main():
-    univ = University()
-    while True:
-        print("""
-    0. Exit
-    1. Add Students
-    2. Add Courses
-    3. Input marks
-    4. List Students
-    5. List Courses
-    6. Show marks for a course
-    7. Calculate GPA for a student
-    8. Sort student by GPA
-    """)
-        options = input("Your choice: ")
-        try:
-            option = int(options)
+            option = self.get_input_numeric("Select an option (0 to exit): ")
             if option == 0:
                 break
-            elif option == 1:
-                univ.set_student()
-            elif option == 2:
-                univ.set_courses()
-            elif option == 3:
-                univ.input_marks()
-            elif option == 4:
-                univ.list_students()
-            elif option == 5:
-                univ.list_courses()
-            elif option == 6:
-                univ.show_marks()
-            elif option == 7:
-                univ.showGPA()
-            elif option == 8:
-                univ.sortGPA()
+            self.handle_option(option)
+            
+    def handle_option(self, option):
+        options_map = {
+            1: self.univ.set_student,
+            2: self.univ.set_courses,
+            3: self.univ.input_marks,
+            4: self.univ.list_students,
+            5: self.univ.list_courses,
+            6: self.univ.show_marks,
+            7: self.univ.showGPA,
+            8: self.univ.sortGPA
+        }
+        action = options_map.get(option)
+        if action:
+            action()
+        else:
+            self.show_message("This option is not implemented yet.")
+        
+    def get_input_numeric(self, prompt):
+        while True:
+            num_str = self.get_input_string(prompt)
+            if num_str.isdigit():
+                return int(num_str)
             else:
-                print("Invalid input. Please try again")
-        except ValueError:
-            print("Please enter a valid numerical value to process the program")
+                self.show_message("Please enter a valid number.")
+    
+    def show_message(self, message):
+        self.stdscr.clear()
+        self.stdscr.addstr(message + "\n Please any key to continue...")
+        self.stdscr.refresh()
+        self.stdscr.getch()
+        
+    def get_input_string(self, prompt):
+        self.stdscr.clear()
+        self.stdscr.addstr(prompt)
+        curses.echo()
+        input_str = self.stdscr.getstr().decode()
+        curses.noecho()
+        return input_str
+    
+def main(stdscr):
+    ui = CursesUI(stdscr)
+    ui.main_loop()
             
 if __name__ == "__main__":
-    main()
-    
+    curses.wrapper(main)
