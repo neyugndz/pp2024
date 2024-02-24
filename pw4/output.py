@@ -42,7 +42,7 @@ class CursesUI:
         self.menu_win.addstr("5. List Courses \n")
         self.menu_win.addstr("6. Show Marks for a Course \n")
         self.menu_win.addstr("7. Calculate GPA for a Student \n")
-        self.menu_win.addstr("8. Sort Student by GPA ")
+        self.menu_win.addstr("8. Sort Student by GPA \n")
         self.menu_win.addstr("0. Exit")
         self.menu_win.refresh()
             
