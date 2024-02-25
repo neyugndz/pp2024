@@ -1,0 +1,3 @@
+ID              Name                 DoB
+22BI13340    Nguyen Dang Nguyen         18/09/2004
+22BI13211    Nguyen Quoc Khanh         28/02/2004
