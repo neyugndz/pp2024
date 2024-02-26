@@ -10,4 +10,4 @@ class Student:
         return self.__name
     
     def get_dob(self):
-        return self.__dob
+        return self.__dob           

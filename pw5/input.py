@@ -1,5 +1,7 @@
 import numpy
 import os
+import zipfile
+from datetime import datetime
 from domains.student import Student
 from domains.course import Course
 
@@ -9,19 +11,52 @@ class Input:
         self.__courses = []
         self.__marks = []
         self.ui = ui
-        
+    
+    def valid_dob(self, window):
+        while True:
+            dob_str = self.ui.get_input_string("Enter student's dob (DD/MM/YYYY): ", window)
+            try:
+                dob = datetime.strptime(dob_str, "%d/%m/%Y").date()
+                return dob.strftime("%d/%m/%Y")
+            except ValueError:
+                self.ui.show_message("Invalid date format. Please enter a valid date format (DD/MM/YYYY): ", window) 
+    
+    def valid_student_name(self, window):
+        while True:
+            name = self.ui.get_input_string("Enter student's name: ", window)
+            if all(letter.isalpha() or letter.isspace() for letter in name):
+                return name
+            else:
+                self.ui.show_message("Invalid name. Please enter a valid name without numbers or special characters.", window)
+    
+    def valid_course_name(self, window):
+        while True:
+            name = self.ui.get_input_string("Enter course's name: ", window)
+            if all(letter.isalpha() or letter.isspace() for letter in name):
+                return name
+            else:
+                self.ui.show_message("Invalid name. Please enter a valid name without numbers or special characters.", window)               
+    
+    def valid_credits(self, window):
+        while True:
+            credits_str = self.ui.get_input_string("Enter the course's credits: ",window)
+            if credits_str.isdigit():
+                return credits_str
+            else:
+                self.ui.show_message("Invalid input. Please enter a numeric value for credits.", window)
+    
     def set_student(self):
         num_students = self.ui.get_input_numeric("Enter the number of students: ", self.ui.input_win)
         for _ in range(num_students):
             student_id = self.ui.get_input_string("Enter student's id: ", self.ui.input_win)
-            name = self.ui.get_input_string("Enter student's name: ", self.ui.input_win)
-            dob = self.ui.get_input_string("Enter student's dob (DD/MM/YYYY): ", self.ui.input_win)
+            name = self.valid_student_name(self.ui.input_win)
+            dob = self.valid_dob(self.ui.input_win)
             self.__students.append(Student(student_id, name, dob))
         script = os.path.dirname(os.path.realpath(__file__))
         file_path = os.path.join(script, "students.txt")
         
         file = open(file_path, 'w')
-        file.write("ID              Name                 DoB\n")
+        file.write("ID           Name                 DoB\n")
         for student in self.__students:
             entry = f"{student.get_id()}    {student.get_name()}         {student.get_dob()}\n"
             file.write(entry)
@@ -32,8 +67,8 @@ class Input:
         num_courses = self.ui.get_input_numeric("Enter the number of courses: ", self.ui.input_win)
         for _ in range(num_courses):
             course_id = self.ui.get_input_string("Enter the course's id: ", self.ui.input_win)
-            name = self.ui.get_input_string("Enter the course's name: ", self.ui.input_win)
-            credit = self.ui.get_input_string("Enter the course's credits: ", self.ui.input_win)
+            name = self.valid_course_name(self.ui.input_win)
+            credit = self.valid_credits(self.ui.input_win)
             self.__courses.append(Course(course_id, name, credit))
             
         script = os.path.dirname(os.path.realpath(__file__))
@@ -97,6 +132,7 @@ class Input:
                 'Course ID' : selected_course.get_id(),
                 'Marks' : mark_input
             })
+            
         script = os.path.dirname(os.path.realpath(__file__))
         file_path = os.path.join(script, 'marks.txt')
         
@@ -208,3 +244,20 @@ class Input:
             sorted_students += f"{student.get_name()} - GPA: {gpa:.2f}\n"
 
         self.ui.show_message(sorted_students, self.ui.input_win)
+    
+    def compressed_file(self):    
+        try:
+            with zipfile.ZipFile('student.dat','w') as zip:
+                zip.write('students.txt')
+                zip.write('courses.txt')
+                zip.write('marks.txt')
+        except IOError as e:
+            print(f"Error compressing files: {e}")
+    
+    def decompress_file(self):
+        if os.path.exists('student.dat'):
+            try:
+                with zipfile.ZipFile('student.dat','r') as zip:
+                    zip.extractall('.')
+            except IOError as e:
+                print(f"Error decompressing files: {e}")      

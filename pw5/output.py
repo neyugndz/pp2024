@@ -4,6 +4,7 @@ class CursesUI:
     def __init__(self,stdscr):
         self.stdscr = stdscr
         self.inp = Input(self)
+        self.inp.decompress_file()
         self.intitialize_ui()
         
     def intitialize_ui(self):
@@ -27,6 +28,7 @@ class CursesUI:
             self.show_menu()
             option = self.get_input_numeric("Select an option (0 to exit): ",  self.input_win)
             if option == 0:
+                self.inp.compressed_file()
                 break
             self.handle_option(option)
             self.stdscr.refresh()

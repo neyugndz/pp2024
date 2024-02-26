@@ -1,5 +1,5 @@
 Student ID   Course ID   Marks
-22BI13340       1   20
-22BI13211       1   19
-22BI13340       2   18
-22BI13211       2   20
+22BI13340       ICT.005   29
+22BI13211       ICT.005   19
+22BI13340       ICT.006   17
+22BI13211       ICT.006   20
