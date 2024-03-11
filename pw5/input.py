@@ -11,7 +11,9 @@ class Input:
         self.__courses = []
         self.__marks = []
         self.ui = ui
-    
+        self.check_and_load_data()
+
+
     def valid_dob(self, window):
         while True:
             dob_str = self.ui.get_input_string("Enter student's dob (DD/MM/YYYY): ", window)
@@ -20,7 +22,7 @@ class Input:
                 return dob.strftime("%d/%m/%Y")
             except ValueError:
                 self.ui.show_message("Invalid date format. Please enter a valid date format (DD/MM/YYYY): ", window) 
-    
+
     def valid_student_name(self, window):
         while True:
             name = self.ui.get_input_string("Enter student's name: ", window)
@@ -28,7 +30,7 @@ class Input:
                 return name
             else:
                 self.ui.show_message("Invalid name. Please enter a valid name without numbers or special characters.", window)
-    
+
     def valid_course_name(self, window):
         while True:
             name = self.ui.get_input_string("Enter course's name: ", window)
@@ -36,7 +38,7 @@ class Input:
                 return name
             else:
                 self.ui.show_message("Invalid name. Please enter a valid name without numbers or special characters.", window)               
-    
+
     def valid_credits(self, window):
         while True:
             credits_str = self.ui.get_input_string("Enter the course's credits: ",window)
@@ -44,7 +46,7 @@ class Input:
                 return credits_str
             else:
                 self.ui.show_message("Invalid input. Please enter a numeric value for credits.", window)
-    
+
     def set_student(self):
         num_students = self.ui.get_input_numeric("Enter the number of students: ", self.ui.input_win)
         for _ in range(num_students):
@@ -54,7 +56,7 @@ class Input:
             self.__students.append(Student(student_id, name, dob))
         script = os.path.dirname(os.path.realpath(__file__))
         file_path = os.path.join(script, "students.txt")
-        
+
         file = open(file_path, 'w')
         file.write("ID           Name                 DoB\n")
         for student in self.__students:
@@ -70,7 +72,7 @@ class Input:
             name = self.valid_course_name(self.ui.input_win)
             credit = self.valid_credits(self.ui.input_win)
             self.__courses.append(Course(course_id, name, credit))
-            
+
         script = os.path.dirname(os.path.realpath(__file__))
         file_path = os.path.join(script, "courses.txt")
         
@@ -111,7 +113,7 @@ class Input:
         except ValueError:
             print("Invalid mark. Please enter a valid numerical mark")
         return False
-
+    
     def input_marks(self):
         if len(self.__courses) == 0 or len(self.__students) == 0:
             self.ui.show_message("There must be courses and students before inputting marks.", self.ui.input_win)
@@ -132,10 +134,10 @@ class Input:
                 'Course ID' : selected_course.get_id(),
                 'Marks' : mark_input
             })
-            
+
         script = os.path.dirname(os.path.realpath(__file__))
         file_path = os.path.join(script, 'marks.txt')
-        
+
         file = open(file_path, 'w')
         file.write("Student ID   Course ID   Marks\n")
         for mark in self.__marks:
@@ -143,7 +145,6 @@ class Input:
             file.write(entry)
         file.close()
         self.ui.show_message("Marks entered and saved successfully. ", self.ui.input_win)
-
     def check_course(self, selected_course_id):
         for mark in self.__marks:
             if mark['Course ID'] == selected_course_id:
@@ -179,7 +180,6 @@ class Input:
     def calGPA(self, student_id):
         student_marks = [mark['Marks'] for mark in self.__marks if mark['Student ID'] == student_id]
         student_credits = [int(course.get_credits()) for course in self.__courses]
-
         weighted_sum = numpy.dot(student_marks, student_credits)
         total_credits = numpy.sum(student_credits)
         
@@ -224,7 +224,6 @@ class Input:
         if len(self.__students) == 0 or len(self.__marks) == 0:
             self.ui.show_message("No students or marks have been added yet.", self.ui.input_win)
             return
-
         def calculate_gpa(student_id):
             student_marks = [mark for mark in self.__marks if mark['Student ID'] == student_id]
             total_credits = 0
@@ -235,16 +234,14 @@ class Input:
                     total_credits += int(course.get_credits())
                     total_points += mark['Marks'] * int(course.get_credits())
             return total_points / total_credits if total_credits else 0
-
         self.__students.sort(key=lambda student: calculate_gpa(student.get_id()), reverse=True)
-
         sorted_students = "Students sorted by GPA in descending order:\n"
         for student in self.__students:
             gpa = calculate_gpa(student.get_id())
             sorted_students += f"{student.get_name()} - GPA: {gpa:.2f}\n"
 
         self.ui.show_message(sorted_students, self.ui.input_win)
-    
+
     def compressed_file(self):    
         try:
             with zipfile.ZipFile('student.dat','w') as zip:
@@ -253,11 +250,44 @@ class Input:
                 zip.write('marks.txt')
         except IOError as e:
             print(f"Error compressing files: {e}")
-    
-    def decompress_file(self):
-        if os.path.exists('student.dat'):
+
+    def decompress_file(self, compressed_file_path):
+        if os.path.exists(compressed_file_path):
             try:
-                with zipfile.ZipFile('student.dat','r') as zip:
+                with zipfile.ZipFile(compressed_file_path,'r') as zip:
                     zip.extractall('.')
             except IOError as e:
-                print(f"Error decompressing files: {e}")      
+                print(f"Error decompressing files: {e}", self.ui.input_win)   
+    
+    def check_and_load_data(self):
+        compressed_file_path = 'student.dat'
+        if os.path.exists(compressed_file_path):
+            self.decompress_file(compressed_file_path)
+            self.load_data()
+        
+    def load_data(self):
+        if os.path.exists('students.txt'):
+            with open('students.txt','r') as file:
+                next(file)
+                for line in file:
+                    student_id, name, dob = line.strip().split(maxsplit=2)
+                    self.__students.append(Student(student_id, name, dob))
+                    
+        if os.path.exists('courses.txt'):
+            with open('courses.txt', 'r') as file:
+                next(file)
+                for line in file:
+                    course_id, name, credits = line.strip().split(maxsplit=2)
+                    self.__courses.append(Course(course_id, name, credits))
+                    
+        if os.path.exists('marks.txt'):
+            with open('marks.txt', 'r') as file:
+                next(file)
+                for line in file:
+                    student_id, course_id, marks = line.strip().split(maxsplit=2)
+                    self.__marks.append({
+                        'Student ID': student_id,
+                        'Course ID': course_id,
+                        'Marks': float(marks)
+                    })
+                    
