@@ -4,7 +4,6 @@ class CursesUI:
     def __init__(self,stdscr):
         self.stdscr = stdscr
         self.inp = Input(self)
-        self.inp.decompress_file()
         self.intitialize_ui()
         
     def intitialize_ui(self):

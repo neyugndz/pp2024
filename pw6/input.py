@@ -12,6 +12,7 @@ class Input:
         self.__courses = []
         self.__marks = []
         self.ui = ui
+        self.check_and_load_data()
     
     def valid_dob(self, window):
         while True:
@@ -268,14 +269,31 @@ class Input:
         except IOError as e:
             print(f"Error compressing and pickling data: {e}")
     
-    def decompress_file(self):
-        if os.path.exists('student.dat'):
+    def decompress_file(self, compressed_file_path):
+        if os.path.exists(compressed_file_path):
             try:
-                with zipfile.ZipFile('student.','r') as zip:
-                    with zip.open('data.pkl','r') as data_file:
-                        data = pickle.load(data_file)
-                        self.__students = data['students']
-                        self.__courses = data['courses']
-                        self.__marks = data['marks']
+                with zipfile.ZipFile(compressed_file_path,'r') as zip:
+                    with zip.open('data.pkl') as file:
+                        data = pickle.load(file)
+                    return data
             except IOError as e:
-                print(f"Error decompressing and unpickling data: {e}")      
+                print(f"Error decompressing and unpickling data: {e}")  
+    
+    def check_and_load_data(self):
+        compressed_file_path = 'student.dat'
+        if os.path.exists(compressed_file_path):
+            self.decompress_file(compressed_file_path)
+            self.load_data()
+            
+    def load_data(self):
+        if os.path.exists('students.pkl'):
+            with open('students.pkl','rb') as file:
+                self.__students = pickle.load(file)
+                    
+        if os.path.exists('courses.pkl'):
+            with open('courses.pkl', 'rb') as file:
+                self.__courses = pickle.load(file)
+                    
+        if os.path.exists('marks.pkl'):
+            with open('marks.pkl', 'rb') as file:
+                self.marks = pickle.load(file)
