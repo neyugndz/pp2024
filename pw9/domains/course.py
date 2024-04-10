@@ -1,6 +1,6 @@
 class Course:
-    def __init__(self, Id, name, credit):
-        self.__id = Id
+    def __init__(self, name, id, credit):
+        self.__id = id
         self.__name = name
         self.__credits = credit
     def get_id(self):

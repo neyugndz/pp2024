@@ -1,9 +1,11 @@
 import tkinter as tk
 from tkinter import *
 from tkinter import ttk
+from tkinter import simpledialog
+from tkinter import messagebox
 from input import Input
 
-#Complete the method to announce Any action being done
+#Complete the method to announce Any action being done // DONE
 class App():
     def __init__(self):
         self.root = tk.Tk()
@@ -26,7 +28,7 @@ class App():
                     command=lambda: self.input_instance.set_courses(self.course_name_ent, self.course_id_ent, self.course_credits_ent))
         self.button2.place(x = 0, y = 61, width=380, height=60)
         
-        self.button3 = tk.Button(self.process_frame, text= "Input Marks",font=("Brass Mon", 12, 'bold'))
+        self.button3 = tk.Button(self.process_frame, text= "Input Marks",font=("Brass Mon", 12, 'bold'), command=self.input_marks)
         self.button3.place(x = 0, y = 121, width=380, height=60)
         
         self.button4 = tk.Button(self.process_frame, text= "List Students",font=("Brass Mon", 12, 'bold'))
@@ -35,8 +37,9 @@ class App():
         
         self.button5 = tk.Button(self.process_frame, text= "List Courses",font=("Brass Mon", 12, 'bold'))
         self.button5.place(x = 0, y = 241, width=380, height=60)
+        self.button5.configure(command=self.list_courses)
         
-        self.button6 = tk.Button(self.process_frame, text= "Show Marks for a course",font=("Brass Mon", 12, 'bold'))
+        self.button6 = tk.Button(self.process_frame, text= "Show Marks for a course",font=("Brass Mon", 12, 'bold'), command=self.show_marks)
         self.button6.place(x = 0, y = 301, width=380, height=60)
         
         self.button6 = tk.Button(self.process_frame, text= "Calculate GPA for a Student",font=("Brass Mon", 12, 'bold'))
@@ -50,6 +53,8 @@ class App():
         
         self.data_frame = tk.LabelFrame(self.root, text="Details", font=("Brass Mon", 20), border=10, relief=tk.GROOVE, bg="lightgrey" )
         self.data_frame.place(x = 430, y =90, width= 910, height=585)
+        self.data_frame.grid_rowconfigure(4, weight=1)
+        self.data_frame.grid_columnconfigure(3, weight=1)
         
         #--------------------------------------------------------ENTRY----------------------------------------------------------
         self.student_name = tk.Label(self.data_frame, text= "Student's Name", font=("Brass Mon", 12, 'bold'), bg="lightgrey")
@@ -91,6 +96,8 @@ class App():
          #--------------------------------------------------------LIST----------------------------------------------------------
         self.students_list = ttk.Treeview(self.data_frame, columns=('Student Name', 'ID', 'Date of Birth'))
         self.courses_list = ttk.Treeview(self.data_frame, columns=('Course Name', 'ID', 'Credits'))
+        self.marks_list = ttk.Treeview(self.data_frame, columns=('Student ID', 'Course ID', 'Marks'))
+        
         #Define column headings for Student
         self.students_list.heading('#0', text ='')
         self.students_list.heading('Student Name', text="Student's Name")
@@ -103,7 +110,7 @@ class App():
         self.students_list.column('Date of Birth', anchor=tk.CENTER, width=150)
         
         #Location of the List
-        self.students_list.grid(row=4, column=0, columnspan=6,padx=10,pady=10,sticky='w')
+        self.students_list.grid(row=4, column=0, columnspan=3,padx=10,pady=10,sticky='w')
         
         #Define column heading for Course
         self.courses_list.heading('#0', text ='')
@@ -117,12 +124,28 @@ class App():
         self.courses_list.column('Credits', anchor=tk.CENTER, width=150)
         
         #Location of the List
-        self.courses_list.grid(row=4, column=2, columnspan=6,padx=10,pady=10,sticky='e')
+        self.courses_list.grid(row=4, column=3, columnspan=3,padx=10,pady=10,sticky='e')
+        
+        #Define column heading for Marks
+        self.marks_list.heading('#0', text='')
+        self.marks_list.heading('Student ID', text="Student's ID")
+        self.marks_list.heading('Course ID', text="Course's ID")
+        self.marks_list.heading('Marks', text="Marks")
+        
+        self.marks_list.column('#0', width=0, stretch=tk.NO)
+        self.marks_list.column('Student ID', anchor=tk.W, width=150)
+        self.marks_list.column('Course ID', anchor=tk.CENTER, width=110)
+        self.marks_list.column('Marks', anchor=tk.CENTER, width=150)
+        
+        #Location of the Marks List
+        self.marks_list.grid(row=5, column=0, columnspan=3,padx=10,pady=10,sticky='nsew')
+        
         
         self.root.mainloop()
         return
     
-    def list_students(self, ):
+    #Lambda Method:
+    def list_students(self):
         #Clear existing entries in Treeview
         for item in self.students_list.get_children():
             self.students_list.delete(item)
@@ -134,6 +157,40 @@ class App():
         for student in students:
             self.students_list.insert('', 'end', values=(student.get_name(), student.get_id(), student.get_dob()))
     
+    def list_courses(self):
+        #Clear existing entries in Treeview
+        for item in self.courses_list.get_children():
+            self.courses_list.delete(item)
+
+        #Retrieve the list of students from input instance
+        courses = self.input_instance.get_courses()
+        
+        #Loop over the list of student and put in Treeview
+        for course in courses:
+            self.courses_list.insert('','end', values=(course.get_name(), course.get_id(), course.get_credits()))
+            
+    def input_marks(self):
+        student_id = simpledialog.askstring("Input", "Enter Student ID")
+        course_id = simpledialog.askstring("Input", "Enter Course ID")
+        marks = simpledialog.askstring("Input", "Enter Marks")
+        
+        if not self.input_instance.set_marks(student_id, course_id, marks):
+            messagebox.showerror("Error", "Failed to add marks. Check if the student and course are valid");
+        else:
+            messagebox.showinfo("Success", "Marks added successfully!")
+            
+    def show_marks(self):
+        course_id = simpledialog.askstring("Input", "Enter Course ID")
+        marks_list = self.input_instance.get_marks(course_id)
+        
+        #Clear existing entries
+        for item in self.marks_list.get_children():
+            self.marks_list.delete(item)
+            
+        #Loop over and Put in Treeview
+        for student_id, marks in marks_list:
+            self.marks_list.insert('','end',values=(student_id, course_id, marks))
+            
 
 if __name__ == "__main__":
     App()
