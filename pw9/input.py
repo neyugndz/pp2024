@@ -12,18 +12,7 @@ class Input:
         self.__students = []
         self.__courses = []
         self.__marks = []
-        
-    def input_something(self, args):
-        while True:
-            try:
-                num_of_args = int(input(f"Enter the number of {args}: "))
-                if num_of_args >= 0:
-                    return num_of_args
-                else:
-                    print(f"Please enter a positive number of {args}")
-            except ValueError:
-                print("Please enter a valid number.")
-    
+
     def valid_name(self, name):
         return all(letter.isalpha() or letter.isspace() for letter in name)
     
@@ -35,15 +24,13 @@ class Input:
             dob = datetime.strptime(dob_str, "%d/%m/%Y")
             return True
         except ValueError:
-                return False
+            return False
     
-    def valid_credits(self):
-        while True:
-            credits = input("Enter the course's credit: ")
-            if credits.isdigit():
-                return credits
-            else:
-                print("Invalid credits. Please enter a numeric value for credits.")
+    def valid_credits(self, credit):
+        return credit.isdigit()
+    
+    def get_students(self):
+        return self.__students[:] #Return a copy of the list
                       
     def set_student(self, student_name_entry, student_id_entry, student_dob_entry):
         student_id = student_id_entry.get()
@@ -64,20 +51,39 @@ class Input:
         
         self.__students.append(Student(student_id, name, dob))
         print("Student added successfully!")
+        student_name_entry.delete(0, 'end')
+        student_id_entry.delete(0, 'end')
+        student_dob_entry.delete(0, 'end')
+        return True
+        
+    def set_courses(self, course_name_entry, course_id_entry, course_credit_entry):
+        name = course_name_entry.get()
+        course_id = course_id_entry.get()
+        credit = course_credit_entry.get()
+        
+        if not self.valid_id(course_id):
+            print("Invalid name. Please enter a valid name without number or special character.")
+            return False
+        
+        if not self.valid_name(name):
+            print("Invalid course ID. Please enter a non-empty string.")
+            return False
+        
+        if not self.valid_credits(credit):
+            print("Invalid credits. Please enter a digit value for credit of the course. ")
+            return False
+        
+        self.__courses.append(Course(name, course_id, credit))
+        print("Course added successfully!")
+        course_name_entry.delete(0, 'end')
+        course_id_entry.delete(0, 'end')
+        course_credit_entry.delete(0, 'end')
         return True
     
-    def add_another_student(self, student_name_entry, student_id_entry, student_dob_entry):
-        if self.set_student(student_name_entry, student_id_entry, student_dob_entry):
-            student_name_entry.delete(0, 'end')
-            student_id_entry.delete(0, 'end')
-            student_dob_entry.delete(0, 'end')
-        else:
-            pass
+    def list_students(self, student_list):
+        for item in student_list.get_children():
+            student_list.delete(item)
+            
+        students = self
         
-    def set_courses(self):
-        num_courses = self.input_something("courses")
-        for _ in range(num_courses):
-            course_id = input("Enter the course's id: ")
-            course_name = self.valid_name("course")
-            course_credits = self.valid_credits()
-            self.__courses.append(Course(course_id, course_name, course_credits)) 
+        
